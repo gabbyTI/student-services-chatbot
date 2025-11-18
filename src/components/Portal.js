@@ -1,7 +1,7 @@
 import React from 'react';
 import './Portal.css';
 
-const Portal = ({ onLogout }) => {
+const Portal = ({ onLogout, user }) => {
   return (
     <div className="portal-container">
       <header className="portal-header">
@@ -15,7 +15,7 @@ const Portal = ({ onLogout }) => {
       
       <main className="portal-main">
         <div className="welcome-section">
-          <h2>Welcome to the Student Services Portal</h2>
+          <h2>Welcome{user?.name ? `, ${user.name}` : ''}</h2>
           <p>Access all your academic and administrative services in one place.</p>
         </div>
         

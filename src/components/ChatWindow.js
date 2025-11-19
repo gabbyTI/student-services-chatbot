@@ -13,7 +13,16 @@ const ChatWindow = ({ isOpen, onClose, user }) => {
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef(null);
+
+  // Quick suggestion buttons based on Lex intents
+  const suggestions = [
+    { text: "Register for a course", icon: "📚" },
+    { text: "Library hours", icon: "📖" },
+    { text: "Ask about programs", icon: "🎓" },
+    { text: "Check my courses", icon: "📋" }
+  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -25,6 +34,9 @@ const ChatWindow = ({ isOpen, onClose, user }) => {
 
   const handleSendMessage = async (messageText) => {
     if (!messageText.trim()) return;
+
+    // Hide suggestions after first message
+    setShowSuggestions(false);
 
     // Add user message
     const userMessage = {
@@ -110,6 +122,22 @@ const ChatWindow = ({ isOpen, onClose, user }) => {
         
         <div ref={messagesEndRef} />
       </div>
+
+      {showSuggestions && (
+        <div className="suggestions-container">
+          {suggestions.map((suggestion, index) => (
+            <button
+              key={index}
+              className="suggestion-button"
+              onClick={() => handleSendMessage(suggestion.text)}
+              disabled={isTyping}
+            >
+              <span className="suggestion-icon">{suggestion.icon}</span>
+              <span className="suggestion-text">{suggestion.text}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <MessageInput onSendMessage={handleSendMessage} disabled={isTyping} />
     </div>

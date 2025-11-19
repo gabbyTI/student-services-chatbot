@@ -102,7 +102,7 @@ const ChatWindow = ({ isOpen, onClose, user }) => {
         {messages.map((message) => (
           <div key={message.id} className={`message ${message.sender}`}>
             <div className="message-bubble">
-              <p>{message.text}</p>
+              <p dangerouslySetInnerHTML={{ __html: message.text.replace(/\n/g, '<br/>') }}></p>
               <span className="message-time">{formatTime(message.timestamp)}</span>
             </div>
           </div>

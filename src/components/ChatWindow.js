@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import MessageInput from './MessageInput';
-import { getChatbotResponse } from '../services/chatbotService';
+import { sendToAmazonLex } from '../services/chatbotService';
 import './ChatWindow.css';
 
-const ChatWindow = ({ isOpen, onClose }) => {
+const ChatWindow = ({ isOpen, onClose, user }) => {
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -38,33 +38,30 @@ const ChatWindow = ({ isOpen, onClose }) => {
     setIsTyping(true);
 
     try {
-      // Simulate API delay and get bot response
-      const botResponse = await getChatbotResponse(messageText);
+      // Send message to Amazon Lex
+      const botResponse = await sendToAmazonLex(messageText, user?.studentId || 'guest');
       
-      setTimeout(() => {
-        const botMessage = {
-          id: Date.now() + 1,
-          text: botResponse,
-          sender: 'bot',
-          timestamp: new Date()
-        };
-        
-        setMessages(prev => [...prev, botMessage]);
-        setIsTyping(false);
-      }, 1000 + Math.random() * 1000); // 1-2 second delay
+      const botMessage = {
+        id: Date.now() + 1,
+        text: botResponse,
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
+      setIsTyping(false);
 
     } catch (error) {
-      setTimeout(() => {
-        const errorMessage = {
-          id: Date.now() + 1,
-          text: "I'm sorry, I'm having trouble processing your request right now. Please try again.",
-          sender: 'bot',
-          timestamp: new Date()
-        };
-        
-        setMessages(prev => [...prev, errorMessage]);
-        setIsTyping(false);
-      }, 1000);
+      console.error('Error communicating with Lex:', error);
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: "I'm sorry, I'm having trouble processing your request right now. Please try again.",
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+      setIsTyping(false);
     }
   };
 

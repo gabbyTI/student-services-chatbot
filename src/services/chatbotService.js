@@ -93,34 +93,57 @@ export const getAvailableKeywords = () => {
   return Object.keys(mockResponses);
 };
 
-// Placeholder function for Amazon Lex integration
-// Replace this function when integrating with actual Lex
-export const sendToAmazonLex = async (message, userId = 'default-user') => {
-  // TODO: Implement Amazon Lex integration
-  // This is where you would send the message to Amazon Lex and return the response
-  
-  /*
-  Example implementation:
-  
-  const lexParams = {
-    botId: 'YOUR_BOT_ID',
-    botAliasId: 'YOUR_BOT_ALIAS_ID', 
-    localeId: 'en_US',
-    sessionId: userId,
-    text: message
-  };
-  
+// Amazon Lex V2 integration
+import { LexRuntimeV2Client, RecognizeTextCommand } from '@aws-sdk/client-lex-runtime-v2';
+import { fetchAuthSession } from '@aws-amplify/auth';
+import { lexConfig } from '../aws-config';
+
+export const sendToAmazonLex = async (message, studentId = 'guest') => {
   try {
-    const response = await lexRuntimeV2.recognizeText(lexParams).promise();
-    return response.messages[0].content;
+    // Get AWS credentials from Cognito Identity Pool
+    const session = await fetchAuthSession();
+    const credentials = session.credentials;
+
+    if (!credentials) {
+      throw new Error('No credentials available');
+    }
+
+    // Create Lex client with credentials
+    const lexClient = new LexRuntimeV2Client({
+      region: lexConfig.region,
+      credentials: credentials
+    });
+
+    // Prepare Lex request
+    const lexParams = {
+      botId: lexConfig.botId,
+      botAliasId: lexConfig.botAliasId,
+      localeId: lexConfig.localeId,
+      sessionId: studentId, // Use student ID as session ID
+      text: message,
+      sessionState: {
+        sessionAttributes: {
+          student_id: studentId // Pass student ID to Lambda
+        }
+      }
+    };
+
+    // Send message to Lex
+    const command = new RecognizeTextCommand(lexParams);
+    const response = await lexClient.send(command);
+
+    // Extract bot response from Lex
+    if (response.messages && response.messages.length > 0) {
+      // Combine all messages from Lex
+      return response.messages.map(msg => msg.content).join('\n');
+    }
+
+    return "I received your message but didn't have a response. Please try again.";
+
   } catch (error) {
     console.error('Error calling Amazon Lex:', error);
     throw error;
   }
-  */
-  
-  // For now, return mock response
-  return await getChatbotResponse(message);
 };
 
 export default { getChatbotResponse, addMockResponse, getAvailableKeywords, sendToAmazonLex };

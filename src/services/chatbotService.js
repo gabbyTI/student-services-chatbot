@@ -98,52 +98,62 @@ import { LexRuntimeV2Client, RecognizeTextCommand } from '@aws-sdk/client-lex-ru
 import { fetchAuthSession } from '@aws-amplify/auth';
 import { lexConfig } from '../aws-config';
 
-export const sendToAmazonLex = async (message, studentId = 'guest') => {
+export const sendToAmazonLex = async (message) => {
   try {
-    // Get AWS credentials from Cognito Identity Pool
     const session = await fetchAuthSession();
     const credentials = session.credentials;
 
-    if (!credentials) {
-      throw new Error('No credentials available');
+    if (!credentials) throw new Error("No credentials available");
+
+    // Extract Cognito user attributes
+    let userAttributes = {};
+    if (session.tokens && session.tokens.idToken) {
+      userAttributes = session.tokens.idToken.payload;
+
+      // Example attributes typically present:
+      // userAttributes.email
+      // userAttributes.name
+      // userAttributes["custom:student_id"]
     }
 
-    // Create Lex client with credentials
+    // Build session attributes for Lex
+    const sessionAttributes = {
+      cognito_username: userAttributes["cognito:username"] || "guest",
+      email: userAttributes.email || "",
+      name: userAttributes.name || "",
+      student_id: userAttributes["custom:student_id"] || "guest"
+    };
+
     const lexClient = new LexRuntimeV2Client({
       region: lexConfig.region,
-      credentials: credentials
+      credentials: credentials,
     });
 
-    // Prepare Lex request
     const lexParams = {
       botId: lexConfig.botId,
       botAliasId: lexConfig.botAliasId,
       localeId: lexConfig.localeId,
-      sessionId: studentId, // Use student ID as session ID
+      sessionId: sessionAttributes.student_id, // Student ID as session
       text: message,
       sessionState: {
-        sessionAttributes: {
-          student_id: studentId // Pass student ID to Lambda
-        }
-      }
+        sessionAttributes,
+      },
     };
 
-    // Send message to Lex
     const command = new RecognizeTextCommand(lexParams);
     const response = await lexClient.send(command);
 
-    // Extract bot response from Lex
-    if (response.messages && response.messages.length > 0) {
-      // Combine all messages from Lex
-      return response.messages.map(msg => msg.content).join('\n');
+    if (response.messages?.length > 0) {
+      return response.messages.map((m) => m.content).join("\n");
     }
 
-    return "I received your message but didn't have a response. Please try again.";
+    return "I didn't understand that. Try again?";
 
   } catch (error) {
-    console.error('Error calling Amazon Lex:', error);
+    console.error("Error calling Lex:", error);
     throw error;
   }
 };
+
 
 export default { getChatbotResponse, addMockResponse, getAvailableKeywords, sendToAmazonLex };

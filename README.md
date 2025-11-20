@@ -1,240 +1,333 @@
 # AI-Powered Chatbot for Student Services
 
-A React-based frontend application for a Final Year Project that provides an AI-powered chatbot interface for student services. The application includes a mock authentication system, a student portal dashboard, and an interactive chatbot interface.
+A React-based frontend application for my Final Year Project that provides an AI-powered chatbot interface for student services. The application uses **AWS Amplify, Amazon Cognito, Amazon Lex V2, AWS Lambda, and DynamoDB** to deliver a fully functional, production-ready student services assistant.
 
-## Features
+## ✨ Features
 
-### 🔐 Authentication System
-- Clean login interface with username/password fields
-- Mock authentication (accepts any non-empty credentials)
-- Responsive design
+### 🔐 AWS Cognito Authentication
+- Secure user sign-up with email verification
+- Login with email and password
+- Custom user attributes (`student_id`, `name`, `email`)
+- Session persistence across browser refreshes
+- Password requirements: Min 8 chars with uppercase, lowercase, numbers, and special characters
+- Identity Pool for temporary AWS credentials
 
 ### 📚 Student Portal Dashboard
-- Welcome dashboard with service cards
-- Quick access to various student services:
+- Personalized welcome with student name and ID
+- Quick access service cards:
   - Course Registration
   - Library Services
   - Financial Services
   - Academic Records
   - Housing Services
   - Career Services
+- Logout functionality
 
-### 🤖 AI Chatbot Interface
-- Floating chat button in bottom-right corner
-- Interactive chat window with message bubbles
-- User messages appear on the right (blue)
-- Bot messages appear on the left (white)
-- Typing indicator with animation
-- 1-2 second response delay to simulate real API calls
+### 🤖 AI Chatbot Interface (Amazon Lex V2)
+- **Floating chat button** in bottom-right corner
+- **Quick action suggestions** with clickable intent buttons
+- **Real-time conversation** with Amazon Lex bot
+- **Message formatting** with line breaks and proper text wrapping
+- **Typing indicator** with animation
+- **Message timestamps**
+- **Student context** passed automatically to Lambda functions
 
-### 💬 Mock Response System
-The chatbot currently uses a comprehensive mock response system with keywords for:
-- Library hours and services
-- Course registration
-- Tuition and payment information
-- Housing and dormitory services
-- Academic records and grades
-- Career services and job opportunities
-- General greetings and help
+### 🎯 Working Lex Intents
 
-## Installation & Setup
+1. **RegisterCourseIntent**
+   - Register for courses by course ID (e.g., "Register for CS101")
+   - Validates course capacity
+   - Prevents duplicate registrations
+   - Updates DynamoDB in real-time
 
-1. **Install Dependencies**
-   ```bash
-   cd student-chatbot
-   npm install
-   ```
+2. **LibraryHoursIntent**
+   - Get library operating hours
+   - Returns formatted schedule
 
-2. **Start Development Server**
-   ```bash
-   npm start
-   ```
-   
-   The application will open at `http://localhost:3000`
+3. **GetAvailableCoursesIntent**
+   - Lists all available courses
+   - Shows course details and capacity
 
-3. **Build for Production**
-   ```bash
-   npm run build
-   ```
+4. **ViewRegisteredCoursesIntent**
+   - View student's enrolled courses
+   - Shows current registration status
 
-## Usage
+5. **UnregisterCourseIntent**
+   - Drop/unregister from a course
+   - Updates enrollment counts
+
+6. **WelcomeIntent**
+   - Greeting and welcome messages
+   - Initial bot interaction
+
+7. **CancelIntent**
+   - Cancel current operation
+   - Built-in intent
+
+8. **FallbackIntent**
+   - Handles unrecognized inputs
+   - Built-in intent
+
+9. **QnAIntent** (Configured, awaiting Bedrock integration)
+   - General questions about programs
+   - Future: AI-powered knowledge base
+
+### 💾 AWS Backend Architecture
+
+**Amazon Lex V2 Bot:**
+- Bot Name: `StudentServiceBot`
+- Region: `us-east-1`
+- Intents: RegisterCourse, LibraryHours, GetAvailableCourses, ViewRegisteredCourses, UnregisterCourse, Welcome, Cancel, QnA, Fallback
+
+**AWS Lambda Function:**
+- Function: `StudentChatbotLexHandler`
+- Receives `student_id` from session attributes
+- Validates and processes course registrations
+- Reads/writes to DynamoDB
+
+**Amazon DynamoDB:**
+- **Students Table** - Student profiles (PK: student_id, GSI: email-index)
+- **Courses Table** - Available courses (PK: course_id)
+- **Registrations Table** - Student enrollments (PK: registration_id, GSI: student-index, course-index)
+
+## 🚀 Installation & Setup
+
+### Prerequisites
+- Node.js 16+ and npm
+- AWS Account with configured services (Cognito, Lex, Lambda, DynamoDB)
+
+### 1. Install Dependencies
+```bash
+cd student-chatbot
+npm install
+```
+
+### 2. Configure Environment Variables
+
+Create a `.env` file in the project root with your AWS credentials:
+
+```bash
+# Copy the example file
+cp .env.example .env
+```
+
+Then edit `.env` with your actual AWS resource IDs:
+
+```env
+# AWS Configuration - DO NOT COMMIT
+REACT_APP_USER_POOL_ID=your-user-pool-id
+REACT_APP_USER_POOL_CLIENT_ID=your-client-id
+REACT_APP_IDENTITY_POOL_ID=your-identity-pool-id
+REACT_APP_LEX_BOT_ID=your-bot-id
+REACT_APP_LEX_BOT_ALIAS_ID=your-bot-alias-id
+REACT_APP_LEX_REGION=us-east-1
+```
+
+**Note:** 
+- The `.env` file is already in `.gitignore` to prevent accidentally committing secrets
+- All AWS configuration is now loaded from environment variables
+- The `aws-config.js` file uses `process.env` to load these values
+- You must restart the dev server (`npm start`) after changing `.env`
+
+### 3. Start Development Server
+```bash
+npm start
+```
+
+The application will open at `http://localhost:3000`
+
+### 4. Build for Production
+```bash
+npm run build
+```
+
+## 📖 Usage
 
 ### Login
-- Use any username and password (both fields must be non-empty)
-- Click "Login" to access the student portal
+Use one of the demo accounts:
+- **Email:** `alice.johnson@school.edu`
+- **Password:** `Test123!`
+- **Student ID:** S1001
 
 ### Using the Chatbot
+
 1. Click the floating chat button (💬) in the bottom-right corner
-2. Type your message in the input field
-3. Press Enter or click the send button (📤)
-4. Wait for the bot's response (1-2 second delay)
+2. Use **quick action buttons** or type your message:
+   - 📚 "Register for a course"
+   - 📋 "View my registered courses"
+   - 🔍 "What courses are available?"
+   - 📖 "Library hours"
 
-### Example Questions to Try
-- "library hours" - Get library opening hours
-- "register course" - Information about course registration
-- "tuition" - Check tuition balance
-- "housing" - Housing and dormitory information
-- "grades" - Academic performance information
-- "help" - General assistance
+### Example Queries
+- "What are the library hours?"
+- "Register for CS101"
+- "Show me available courses"
+- "What courses am I registered for?"
+- "Unregister from CS202"
+- "I want to take AI301"
 
-## Project Structure
+## 🏗️ Project Structure
 
 ```
 src/
-├── App.js                 # Main application component
-├── App.css               # Global application styles
-├── index.js              # Application entry point
+├── App.js                     # Main app with auth state management
+├── App.css                   # Global styles + loading screen
+├── index.js                  # Entry point
+├── aws-config.js             # AWS configuration (uses env variables)
+├── .env                      # Environment variables (NOT in git)
+├── .env.example              # Template for environment setup
 ├── components/
-│   ├── LoginPage.js      # Authentication interface
-│   ├── LoginPage.css     # Login page styles
-│   ├── Portal.js         # Student dashboard
-│   ├── Portal.css        # Dashboard styles
-│   ├── FloatingChatButton.js  # Chat toggle button
-│   ├── FloatingChatButton.css # Button styles
-│   ├── ChatWindow.js     # Main chat interface
-│   ├── ChatWindow.css    # Chat window styles
-│   ├── MessageInput.js   # Message input component
-│   └── MessageInput.css  # Input field styles
+│   ├── LoginPage.js         # Sign up, login, verification UI
+│   ├── LoginPage.css        
+│   ├── Portal.js            # Student dashboard
+│   ├── Portal.css           
+│   ├── FloatingChatButton.js # Chat toggle button
+│   ├── FloatingChatButton.css
+│   ├── ChatWindow.js        # Main chat interface with Lex integration
+│   ├── ChatWindow.css       # Includes suggestion buttons styling
+│   ├── MessageInput.js      # Message input component
+│   └── MessageInput.css     
 └── services/
-    └── chatbotService.js # Mock responses & Amazon Lex integration placeholder
+    └── chatbotService.js    # Amazon Lex V2 SDK integration
 ```
 
-## Customizing Mock Responses
+## 🔒 Security Best Practices
 
-### Adding New Responses
-Edit `src/services/chatbotService.js` to add new keyword-response pairs:
+### Environment Variables
+All AWS credentials and configuration are stored in the `.env` file:
+- `REACT_APP_USER_POOL_ID` - Cognito User Pool identifier
+- `REACT_APP_USER_POOL_CLIENT_ID` - Cognito app client ID (sensitive)
+- `REACT_APP_IDENTITY_POOL_ID` - Identity pool for AWS credentials (sensitive)
+- `REACT_APP_LEX_BOT_ID` - Lex bot identifier
+- `REACT_APP_LEX_BOT_ALIAS_ID` - Lex bot alias
+- `REACT_APP_LEX_REGION` - AWS region
 
-```javascript
-const mockResponses = {
-  // Add your new responses here
-  'new keyword': 'Your response message',
-  'another keyword': 'Another response message'
-};
+**Important:**
+- ✅ `.env` is in `.gitignore` (never committed to Git)
+- ✅ Use `.env.example` as a template for new setups
+- ✅ All values loaded via `process.env` in `aws-config.js`
+- ⚠️ If credentials are exposed, rotate them immediately in AWS Console
+- 🔄 Restart `npm start` after any `.env` changes
+
+### What to Keep Private
+**Most sensitive:**
+- `REACT_APP_USER_POOL_CLIENT_ID` - Allows authentication operations
+- `REACT_APP_IDENTITY_POOL_ID` - Grants temporary AWS credentials
+
+**Moderately sensitive:**
+- `REACT_APP_USER_POOL_ID` - Identifies your user pool
+- `REACT_APP_LEX_BOT_ID` - Identifies your Lex bot
+- `REACT_APP_LEX_BOT_ALIAS_ID` - Bot version identifier
+
+**Best Practice:** Keep all configuration in `.env` for easy environment switching (dev/staging/prod)
+
+## 🔧 AWS Configuration Details
+
+### Cognito User Pool Settings
+- Sign-in: Email only
+- Required attributes: `email`, `name`
+- Custom attribute: `custom:student_id` (String, 5-10 chars)
+- Auto-verified attributes: email
+- Password policy: Min 8 chars, uppercase, lowercase, numbers, special chars
+
+### Cognito Identity Pool
+- Authenticated role has `AmazonLexRunBotsOnly` policy
+- Provides temporary credentials for frontend to call Lex
+
+### Lambda IAM Permissions
+- `AmazonDynamoDBFullAccess`
+- Lambda invoke permission from Lex
+
+## 📊 Sample Data
+
+### Test Users (10 total)
+| Name | Email | Student ID | Password |
+|------|-------|------------|----------|
+| Alice Johnson | alice.johnson@school.edu | S1001 | Test123! |
+| Brian Smith | brian.smith@school.edu | S1002 | Test123! |
+| Carla Lee | carla.lee@school.edu | S1003 | Test123! |
+
+### Available Courses (8 total)
+- **CS101** - Introduction to Programming
+- **CS202** - Data Structures and Algorithms
+- **IT201** - Networking Fundamentals
+- **CY101** - Introduction to Cybersecurity
+- **AI301** - Artificial Intelligence
+- **DB250** - Database Systems
+- **DS201** - Introduction to Data Science
+- **WEB220** - Web Development
+
+## 🔄 How It Works
+
+### Architecture Flow
+```
+User (React App)
+  ↓ [Cognito Authentication]
+AWS Amplify
+  ↓ [Lex SDK with Identity Pool credentials]
+Amazon Lex V2 Bot
+  ↓ [Passes student_id in sessionAttributes]
+AWS Lambda Function
+  ↓ [Business logic & validation]
+Amazon DynamoDB
+  ↓ [Stores/retrieves data]
+Response → User
 ```
 
-### Modifying Existing Responses
-Simply update the response text for any existing keyword in the `mockResponses` object.
+### Course Registration Flow
+1. User clicks "Register for a course" or types "Register for CS101"
+2. Lex extracts `CourseID` slot
+3. Lex confirms with user
+4. User confirms → Lambda function triggered
+5. Lambda receives `student_id` from session attributes
+6. Lambda validates:
+   - Course exists?
+   - Has available capacity?
+   - Student not already registered?
+7. If valid → Creates registration record → Updates enrolled count
+8. Returns success message with course details
 
-### Adding Dynamic Responses
-You can create more complex response logic by modifying the `getChatbotResponse` function:
-
-```javascript
-export const getChatbotResponse = (userMessage) => {
-  return new Promise((resolve) => {
-    const message = userMessage.toLowerCase();
-    
-    // Add custom logic here
-    if (message.includes('time')) {
-      resolve(`The current time is ${new Date().toLocaleTimeString()}`);
-      return;
-    }
-    
-    // ... rest of the function
-  });
-};
-```
-
-## Amazon Lex Integration (Future)
-
-The codebase is structured to easily integrate with Amazon Lex when ready:
-
-1. **Install AWS SDK**
-   ```bash
-   npm install aws-sdk
-   ```
-
-2. **Update chatbotService.js**
-   - Replace the `sendToAmazonLex` function with actual Lex integration
-   - Add your AWS credentials, bot ID, and region
-   - Update the `getChatbotResponse` function to call Lex instead of mock responses
-
-3. **Example Integration Code**
-   ```javascript
-   import AWS from 'aws-sdk';
-
-   const lexRuntimeV2 = new AWS.LexRuntimeV2({
-     region: 'YOUR_REGION',
-     credentials: new AWS.Credentials('ACCESS_KEY', 'SECRET_KEY')
-   });
-
-   export const sendToAmazonLex = async (message, userId = 'default-user') => {
-     const lexParams = {
-       botId: 'YOUR_BOT_ID',
-       botAliasId: 'YOUR_BOT_ALIAS_ID',
-       localeId: 'en_US',
-       sessionId: userId,
-       text: message
-     };
-
-     try {
-       const response = await lexRuntimeV2.recognizeText(lexParams).promise();
-       return response.messages[0].content;
-     } catch (error) {
-       console.error('Error calling Amazon Lex:', error);
-       throw error;
-     }
-   };
-   ```
-
-## Styling & Customization
+## 🎨 Styling & Customization
 
 ### Color Scheme
-The application uses a purple gradient theme. Main colors:
-- Primary: `#667eea` to `#764ba2`
+- Primary gradient: `#667eea` to `#764ba2`
 - Background: `#f5f7fa`
 - Text: `#333`
 - Borders: `#e1e5e9`
 
 ### Responsive Design
-The application is fully responsive and works on:
+Fully responsive for:
 - Desktop (1200px+)
 - Tablet (768px - 1199px)
 - Mobile (320px - 767px)
 
-### Custom Styling
-Each component has its own CSS file. Modify these files to change:
-- Colors and gradients
-- Layout and spacing
-- Animations and transitions
-- Typography
-
-## Development Notes
-
-### Code Quality
-- Components are functional and use React Hooks
-- Clean separation of concerns
-- Responsive design principles
-- Accessible UI elements
-
-### Performance
-- Optimized animations
-- Efficient state management
-- Lazy loading ready
-- Production build optimized
-
-### Scalability
-- Modular component structure
-- Easy to add new features
-- Service layer abstraction
-- Configuration-driven responses
-
-## Demo Instructions
-
-1. **Login Demo**: Use any username/password combination
-2. **Portal Navigation**: Explore different service cards
-3. **Chatbot Demo**: Try various questions like:
-   - "What are the library hours?"
-   - "How do I register for a course?"
-   - "What's my tuition balance?"
-   - "Tell me about housing options"
-
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **npm install fails**: Try deleting `node_modules` and `package-lock.json`, then run `npm install` again
-2. **Port 3000 in use**: Use `npm start -- --port 3001` to run on a different port
-3. **Styling issues**: Clear browser cache and hard refresh
+**"No credentials available" error:**
+- Check `.env` file exists and contains correct values
+- Restart dev server after changing environment variables
+- Verify Identity Pool configuration in AWS Console
+- Ensure authenticated role has `AmazonLexRunBotsOnly` policy
+- Confirm user is logged in via Cognito
+
+**Environment variables not loading:**
+- Must restart `npm start` after changing `.env`
+- Variable names must start with `REACT_APP_`
+- Check `.env` file is in project root (not in `src/`)
+
+**Lex not responding:**
+- Verify bot is published and alias is active
+- Check Lambda function has correct permissions
+- Confirm bot ID and alias ID in `aws-config.js`
+- Review CloudWatch logs for Lambda errors
+
+**Registration fails:**
+- Check DynamoDB tables exist
+- Verify Lambda has DynamoDB permissions
+- Confirm student exists in Students table
+- Check course capacity hasn't been reached
 
 ### Browser Compatibility
 - Chrome (recommended)
@@ -242,16 +335,27 @@ Each component has its own CSS file. Modify these files to change:
 - Safari
 - Edge
 
-## Future Enhancements
+## 📦 Dependencies
 
-- Real authentication system
-- Backend API integration
-- Amazon Lex chatbot integration
-- User session persistence
-- Advanced chat features (file upload, voice input)
-- Admin panel for response management
-- Analytics and usage tracking
+```json
+{
+  "@aws-amplify/auth": "^6.17.0",
+  "@aws-sdk/client-lex-runtime-v2": "^3.934.0",
+  "aws-amplify": "^6.15.8",
+  "react": "^19.1.1",
+  "react-dom": "^19.1.1",
+  "react-scripts": "^5.0.1"
+}
+```
 
-## License
+## 📄 License
 
 This project is for educational purposes as part of a Final Year Project.
+
+## 🙏 Acknowledgments
+
+Built with AWS services including Amplify, Cognito, Lex V2, Lambda, and DynamoDB.
+
+---
+
+**Made with ❤️ for Final Year Project 2025**

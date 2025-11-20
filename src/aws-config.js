@@ -1,9 +1,9 @@
 export const awsConfig = {
   Auth: {
     Cognito: {
-      userPoolId: 'us-east-1_9IFQ0LPqU',
-      userPoolClientId: '3i3v4q1j9tog9cel2rq00mstm',
-      identityPoolId: "us-east-1:1f4b6e1d-efb5-49f8-a70f-d0f6c2cf6023",
+      userPoolId: process.env.REACT_APP_USER_POOL_ID,
+      userPoolClientId: process.env.REACT_APP_USER_POOL_CLIENT_ID,
+      identityPoolId: process.env.REACT_APP_IDENTITY_POOL_ID,
       loginWith: {
         email: true
       },
@@ -28,8 +28,8 @@ export const awsConfig = {
 };
 
 export const lexConfig = {
-  botId: 'EIGIS2NJTN',
-  botAliasId: 'TSTALIASID',
+  botId: process.env.REACT_APP_LEX_BOT_ID,
+  botAliasId: process.env.REACT_APP_LEX_BOT_ALIAS_ID,
   localeId: 'en_US',
-  region: 'us-east-1'
+  region: process.env.REACT_APP_LEX_REGION || 'us-east-1'
 };

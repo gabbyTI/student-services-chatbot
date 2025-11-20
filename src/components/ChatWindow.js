@@ -19,9 +19,9 @@ const ChatWindow = ({ isOpen, onClose, user }) => {
   // Quick suggestion buttons based on Lex intents
   const suggestions = [
     { text: "Register for a course", icon: "📚" },
-    { text: "Library hours", icon: "📖" },
-    { text: "Ask about programs", icon: "🎓" },
-    { text: "Check my courses", icon: "📋" }
+    { text: "View my registered courses", icon: "📋" },
+    { text: "What courses are available?", icon: "🔍" },
+    { text: "Library hours", icon: "📖" }
   ];
 
   const scrollToBottom = () => {

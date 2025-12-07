@@ -16,6 +16,9 @@ const Portal = ({ onLogout, user }) => {
       <main className="portal-main">
         <div className="welcome-section">
           <h2>Welcome{user?.name ? `, ${user.name}` : ''}</h2>
+          {user?.studentId && (
+            <p className="student-id">Student ID: {user.studentId}</p>
+          )}
           <p>Access all your academic and administrative services in one place.</p>
         </div>
         

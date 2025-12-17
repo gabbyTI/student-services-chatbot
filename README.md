@@ -84,9 +84,10 @@ A React-based frontend application for my Final Year Project that provides an AI
 - Receives `student_id` from session attributes
 - Validates and processes course registrations
 - Reads/writes to DynamoDB
+- **Comprehensive logging** to CloudWatch for debugging and monitoring
+- Logs all intent executions, validations, and errors
 
 **Amazon DynamoDB:**
-- **Students Table** - Student profiles (PK: student_id, GSI: email-index)
 - **Courses Table** - Available courses (PK: course_id)
 - **Registrations Table** - Student enrollments (PK: registration_id, GSI: student-index, course-index)
 

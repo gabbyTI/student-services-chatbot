@@ -14,6 +14,7 @@ const ChatWindow = ({ isOpen, onClose, user }) => {
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Quick suggestion buttons based on Lex intents
@@ -84,7 +85,7 @@ const ChatWindow = ({ isOpen, onClose, user }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="chat-window">
+    <div className={`chat-window ${isExpanded ? 'expanded' : ''}`}>
       <div className="chat-header">
         <div className="chat-title">
           <span className="chat-avatar">🤖</span>
@@ -93,9 +94,18 @@ const ChatWindow = ({ isOpen, onClose, user }) => {
             <span className="status">Online</span>
           </div>
         </div>
-        <button className="close-button" onClick={onClose}>
-          ✕
-        </button>
+        <div className="header-buttons">
+          <button 
+            className="expand-button" 
+            onClick={() => setIsExpanded(!isExpanded)}
+            title={isExpanded ? "Minimize" : "Expand"}
+          >
+            {isExpanded ? '🗕' : '🗖'}
+          </button>
+          <button className="close-button" onClick={onClose}>
+            ✕
+          </button>
+        </div>
       </div>
 
       <div className="chat-messages">

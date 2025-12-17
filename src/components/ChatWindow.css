@@ -13,6 +13,14 @@
   z-index: 1001;
   overflow: hidden;
   animation: slideInUp 0.3s ease-out;
+  transition: all 0.3s ease;
+}
+
+.chat-window.expanded {
+  width: 600px;
+  height: 700px;
+  bottom: 20px;
+  right: 20px;
 }
 
 @keyframes slideInUp {
@@ -57,6 +65,13 @@
   opacity: 0.8;
 }
 
+.header-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.expand-button,
 .close-button {
   background: none;
   border: none;
@@ -66,8 +81,14 @@
   padding: 0.25rem;
   border-radius: 4px;
   transition: background-color 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.expand-button:hover,
 .close-button:hover {
   background: rgba(255, 255, 255, 0.2);
 }
